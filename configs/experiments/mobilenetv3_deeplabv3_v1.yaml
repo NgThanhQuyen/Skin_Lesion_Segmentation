@@ -1,0 +1,21 @@
+# =============================================================================
+# Thử nghiệm: mobilenetv3_deeplabv3_v1
+# Mô tả: Kiến trúc DeepLabV3 kết hợp mạng xương sống MobileNetV3-Large (chỉ sử dụng
+#       trọng số tiền huấn luyện ImageNet cho backbone).
+#       Mục tiêu so sánh hiệu năng với baseline U-Net + ResNet34.
+# =============================================================================
+
+_base_: ../base.yaml
+
+model:
+  name: deeplabv3
+  encoder_name: mobilenet_v3_large   # Giá trị này mang tính thông tin dùng để ghi nhận nhật ký
+  encoder_weights: imagenet          # "imagenet" -> nạp trọng số tiền huấn luyện IMAGENET1K_V1 cho backbone
+  # Lưu ý: Nhánh phân loại phụ aux head đã bị tắt trong hàm xây dựng mô hình (aux_loss=False)
+
+training:
+  batch_size: 64                     # MobileNetV3 có cấu trúc gọn nhẹ nên có thể tăng batch size
+  lr: 1.0e-3                         # Tỷ lệ học cao hơn để phù hợp với backbone dung lượng nhẹ
+
+logging:
+  experiment_name: mobilenetv3_deeplabv3_v1

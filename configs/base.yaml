@@ -1,0 +1,102 @@
+# =============================================================================
+# Thư mục: configs/base.yaml
+# Chức năng: Cấu hình mặc định (Base config) chứa các giá trị tham số chung cho toàn bộ dự án.
+#            Các file cấu hình thử nghiệm khác sẽ kế thừa từ file này thông qua trường '_base_'
+#            và chỉ thực hiện ghi đè các tham số có sự thay đổi.
+# =============================================================================
+
+seed: 42
+
+# -----------------------------------------------------------------------------
+# Cấu hình Mô hình (Model Configuration)
+# -----------------------------------------------------------------------------
+model:
+  name: unet                          # Tên mô hình: "unet" | "unet_original" | "deeplabv3" | "deeplabv3plus" | "transunet"
+  encoder_name: resnet34              # Tên mạng xương sống (backbone) dùng làm bộ mã hóa
+  encoder_weights: imagenet           # Trọng số tiền huấn luyện: "imagenet" hoặc null (huấn luyện từ đầu)
+  decoder_channels: [256, 128, 64, 32, 16] # Số kênh đầu ra của các khối giải mã (decoder)
+  decoder_attention_type: scse        # Cơ chế chú ý trong decoder: "scse" | "se" | null
+  in_channels: 3                      # Số kênh của ảnh đầu vào (RGB = 3)
+  classes: 1                          # Số lớp phân đoạn đầu ra (phân đoạn nhị phân = 1)
+
+# -----------------------------------------------------------------------------
+# Cấu hình Huấn luyện (Training Configuration)
+# -----------------------------------------------------------------------------
+training:
+  batch_size: 64                      # Kích thước batch huấn luyện
+  find_unused_parameters: false       # Chỉ dùng cho DDP: đặt True nếu mô hình có các nhánh phân tách không sử dụng
+  max_epochs: 500                     # Số lượng epoch tối đa chạy huấn luyện
+  optimizer: adamw                    # Bộ tối ưu hóa: "adamw" | "adam" | "sgd"
+  lr: 2.0e-4                          # Tỷ lệ học (Learning rate) cơ bản
+  weight_decay: 1.0e-4                # Hệ số suy giảm trọng số
+  mixed_precision: true               # Sử dụng độ chính xác hỗn hợp FP16 để tiết kiệm bộ nhớ GPU
+  grad_clip: null                     # Ngưỡng cắt giảm gradient: null hoặc giá trị float cụ thể
+  deterministic: true                 # True: Chế độ xác định cuDNN (deterministic) giúp tái tạo kết quả hoàn chỉnh
+                                      # False: Bật chế độ tự động tối ưu cuDNN benchmark (chạy nhanh hơn)
+
+  # Cấu hình tỷ lệ học phân biệt (Differential learning rate - encoder học chậm hơn decoder)
+  # Yêu cầu mô hình cung cấp thuộc tính .encoder (mô hình SMP) hoặc .model.backbone (Wrapper DeepLabV3)
+  differential_lr:
+    enabled: false                    # Đặt True để kích hoạt tỷ lệ học phân biệt
+    encoder_lr_scale: 0.1             # Tỷ lệ học của encoder = lr * encoder_lr_scale
+
+  # Trọng số của các hàm mất mát thành phần trong Combined Loss
+  loss:
+    focal_weight: 0.5                 # Trọng số của Focal Loss
+    dice_weight: 0.5                  # Trọng số của Soft Dice Loss
+    focal_gamma: 2.0                  # Tham số điều chỉnh tiêu điểm của Focal Loss
+    focal_alpha: null                 # Trọng số cân bằng lớp của Focal Loss (null = không áp dụng)
+
+# -----------------------------------------------------------------------------
+# Bộ điều chỉnh tỷ lệ học (Learning Rate Scheduler)
+# Lưu ý: monitor được chọn phải nhất quán với bộ giám sát dừng sớm (early stopping)
+# -----------------------------------------------------------------------------
+lr_schedule:
+  scheduler: reduce_on_plateau        # Bộ điều chỉnh tự động giảm tỷ lệ học khi chỉ số giám sát rơi vào trạng thái bão hòa
+  monitor: val_dice                   # Chỉ số giám sát để điều chỉnh (val_dice)
+  mode: max                           # Tìm kiếm giá trị lớn nhất (maximize val_dice)
+  factor: 0.5                         # Hệ số giảm tỷ lệ học (lr = lr * factor)
+  patience: 5                         # Số epoch chờ sự cải thiện trước khi giảm tỷ lệ học
+  min_lr: 1.0e-7                      # Ngưỡng tỷ lệ học tối thiểu cho phép
+  warmup_epochs: 0                    # Số epoch chạy khởi động (0 = không chạy khởi động)
+  warmup_start_lr: 1.0e-6            # Tỷ lệ học bắt đầu tại epoch 0 khi có cài đặt khởi động
+
+# -----------------------------------------------------------------------------
+# Bộ giám sát dừng sớm (Early Stopping)
+# -----------------------------------------------------------------------------
+early_stopping:
+  patience: 10                        # Số epoch chờ đợi sự cải thiện trước khi quyết định dừng huấn luyện sớm
+  min_delta: 1.0e-4                   # Ngưỡng thay đổi tối thiểu để được tính là cải thiện kết quả
+  monitor: val_dice                   # Chỉ số giám sát
+  mode: max                           # Tìm kiếm giá trị lớn nhất
+
+# -----------------------------------------------------------------------------
+# Cấu hình Dữ liệu (Data Configuration)
+# Chạy cục bộ sau khi tiền xử lý dữ liệu:    data.root = data/processed
+# Ghi đè thông qua dòng lệnh trên Kaggle:   data.root = /kaggle/input/tên-dataset
+# -----------------------------------------------------------------------------
+data:
+  root: data/processed
+  input_size: [256, 256]              # Kích thước ảnh đầu vào [Cao, Rộng]
+  num_workers: 2                      # Số luồng song song dùng để nạp dữ liệu
+  pin_memory: true                    # Tải nhanh dữ liệu lên bộ nhớ GPU (pin memory)
+  persistent_workers: true            # Giữ lại luồng nạp dữ liệu để tiết kiệm thời gian khởi động giữa các epoch
+  val_batch_size_multiplier: 2        # Batch size tập kiểm định = batch size huấn luyện * hệ số này
+
+# -----------------------------------------------------------------------------
+# Cấu hình ghi nhận nhật ký (Logging)
+# Để tắt ghi nhận nhật ký qua W&B: logging.use_wandb = false
+# -----------------------------------------------------------------------------
+logging:
+  use_wandb: true                     # Kích hoạt ghi nhận nhật ký qua Weights & Biases
+  project: skin-cancer-segmentation   # Tên dự án trên W&B
+  entity: null                        # Tài khoản W&B sử dụng (null = tài khoản mặc định)
+  experiment_name: null               # Tên phiên thử nghiệm (null = tự động lấy tên file cấu hình tương ứng)
+
+# -----------------------------------------------------------------------------
+# Thư mục đầu ra (Output Directory)
+# Chạy cục bộ:  output.dir = outputs
+# Trên Kaggle:  output.dir = /kaggle/working (ghi đè qua CLI)
+# -----------------------------------------------------------------------------
+output:
+  dir: outputs

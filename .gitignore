@@ -1,0 +1,26 @@
+# =============================================================================
+# File: .gitignore
+# Chức năng: Chỉ định các file và thư mục mà Git sẽ bỏ qua không theo dõi (không đẩy lên GitHub).
+#            Điều này giúp tránh vô tình đẩy các thư mục dữ liệu nặng hoặc file rác lên repository.
+# =============================================================================
+
+# Các file bytecode đã biên dịch tối ưu hóa của Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Các thư mục checkpoints của Jupyter Notebook
+.ipynb_checkpoints/
+
+# Thư mục chứa dữ liệu và kết quả huấn luyện (tránh đẩy file lớn lên GitHub)
+data/
+outputs/
+*.pth
+*.pt
+*.onnx
+
+# Các file cấu hình của IDE và hệ điều hành
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

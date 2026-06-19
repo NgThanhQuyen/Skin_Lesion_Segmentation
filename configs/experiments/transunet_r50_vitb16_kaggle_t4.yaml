@@ -1,0 +1,51 @@
+# =============================================================================
+# Thử nghiệm: transunet_r50_vitb16_kaggle_t4
+# Mục tiêu: Huấn luyện kiến trúc lai TransUNet (R50-ViT-B_16) trên môi trường Kaggle T4 GPU.
+# =============================================================================
+
+_base_: ../base.yaml
+
+model:
+  name: transunet
+  transunet_variant: r50_vit_b16
+  encoder_name: r50_vit_b16
+  encoder_weights: imagenet
+  pretrained_path: /kaggle/input/transunet-pretrained-weights/R50+ViT-B_16.npz # Cần chỉ định đường dẫn file NPZ trên Kaggle
+  decoder_channels: [256, 128, 64, 16]
+  skip_channels: [512, 256, 64, 16]
+  n_skip: 3
+  in_channels: 3
+  classes: 1
+  decoder_attention_type: null
+  vit_hidden_size: 768
+  vit_mlp_dim: 3072
+  vit_num_heads: 12
+  vit_num_layers: 12
+  vit_dropout_rate: 0.1
+  vit_attention_dropout_rate: 0.0
+
+training:
+  batch_size: 4                      # Mạng TransUNet rất nặng, batch_size=4 giúp tránh lỗi CUDA OOM
+  lr: 1.0e-4
+  weight_decay: 1.0e-4
+  grad_clip: 1.0                     # Kích hoạt cắt giảm gradient để ổn định quá trình tối ưu hóa
+  deterministic: false
+  find_unused_parameters: false
+  differential_lr:
+    enabled: false
+
+lr_schedule:
+  scheduler: cosine
+  warmup_epochs: 5
+  warmup_start_lr: 1.0e-6
+  min_lr: 1.0e-6
+
+data:
+  input_size: [256, 256]             # TransUNet yêu cầu kích thước ảnh đầu vào là hình vuông
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  val_batch_size_multiplier: 1       # Khớp tỷ lệ với batch size huấn luyện để kiểm soát tối ưu GPU memory
+
+logging:
+  experiment_name: transunet_r50_vitb16_kaggle_t4

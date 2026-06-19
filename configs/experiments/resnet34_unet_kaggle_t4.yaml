@@ -1,0 +1,16 @@
+# =============================================================================
+# Thử nghiệm: resnet34_unet_kaggle_t4
+# Mục tiêu: Chạy huấn luyện trên môi trường Kaggle 2x T4 GPU nhằm cân bằng tốc độ và chất lượng.
+# =============================================================================
+
+_base_: ../base.yaml
+
+logging:
+  experiment_name: resnet34_unet_kaggle_t4
+
+training:
+  batch_size: 32                     # Kích thước batch nhỏ hơn để phù hợp với bộ nhớ 15GB của T4 GPU
+  deterministic: false               # Tắt chế độ deterministic để tăng tốc độ tính toán song song
+
+data:
+  num_workers: 4                     # Tăng số luồng nạp dữ liệu để tận dụng tối đa CPU của Kaggle

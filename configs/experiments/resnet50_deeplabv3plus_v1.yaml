@@ -1,0 +1,23 @@
+# =============================================================================
+# Thử nghiệm: resnet50_deeplabv3plus_v1
+# Mô tả: Mô hình DeepLabV3+ (hỗ trợ bởi SMP) sử dụng bộ mã hóa ResNet50.
+# =============================================================================
+
+_base_: ../base.yaml
+
+model:
+  name: deeplabv3plus
+  encoder_name: resnet50
+  encoder_weights: imagenet
+  decoder_channels: 256
+  decoder_attention_type: null       # Mạng DeepLabV3+ của SMP sẽ bỏ qua cơ chế chú ý trong decoder
+  encoder_output_stride: 16          # Hệ số nén không gian đầu ra của encoder
+  in_channels: 3
+  classes: 1
+
+training:
+  batch_size: 32                     # ResNet50 nặng hơn ResNet34 nên giảm batch size để tránh tràn bộ nhớ GPU
+  lr: 3.0e-4                         # Tỷ lệ học phù hợp cho bộ mã hóa lớn hơn
+
+logging:
+  experiment_name: resnet50_deeplabv3plus_v1

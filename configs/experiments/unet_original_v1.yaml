@@ -1,0 +1,24 @@
+# =============================================================================
+# Thử nghiệm: unet_original_v1
+# Mô tả: Mạng baseline U-Net nguyên bản (Ronneberger et al., 2015), huấn luyện từ đầu
+#       không có BatchNorm và không dùng các khối tiền huấn luyện.
+# =============================================================================
+
+_base_: ../base.yaml
+
+model:
+  name: unet_original
+  in_channels: 3
+  classes: 1
+  base_channels: 64                  # Số lượng bộ lọc cơ bản ở khối đầu tiên
+  encoder_name: null                 # Bỏ qua vì đây là cấu hình U-Net tự dựng
+  encoder_weights: null              # Bỏ qua do tự huấn luyện hoàn toàn từ đầu
+  decoder_attention_type: null
+  decoder_channels: null
+
+training:
+  batch_size: 16                     # Giảm kích thước batch do mô hình tự dựng cần sự ổn định
+  lr: 5.0e-4                         # Đặt tỷ lệ học lớn hơn một chút để kích thích hội tụ từ đầu
+
+logging:
+  experiment_name: unet_original_v1

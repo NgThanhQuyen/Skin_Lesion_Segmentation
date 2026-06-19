@@ -1,0 +1,11 @@
+# =============================================================================
+# Thử nghiệm: resnet34_unet_v1
+# Mục tiêu: Tái tạo lại kết quả tốt nhất của mô hình U-Net kết hợp ResNet34:
+#          kết quả trên tập Test: Dice=0.9021, IoU=0.8368.
+#          Epoch đạt kết quả tốt nhất: 41 | Val Dice: 0.8972.
+# =============================================================================
+
+_base_: ../base.yaml
+
+logging:
+  experiment_name: resnet34_unet_v1

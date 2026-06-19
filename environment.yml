@@ -1,0 +1,43 @@
+# =============================================================================
+# File: environment.yml
+# Chức năng: Định nghĩa cấu hình môi trường ảo Conda cho máy cá nhân (Local).
+# Cách dùng:
+#   conda env create -f environment.yml
+#   conda activate CV
+# Sau khi khởi tạo xong môi trường, hãy cài đặt gói mã nguồn src ở chế độ nhà phát triển:
+#   pip install -e .
+# =============================================================================
+
+name: CV
+
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.11
+  - pip
+
+  # Hệ sinh thái PyTorch (CUDA 12.1 - có thể thay đổi phiên bản CUDA tùy theo phần cứng của bạn)
+  - pytorch>=2.1
+  - torchvision
+  - pytorch-cuda=12.1
+
+  # Các thư viện xử lý dữ liệu và vẽ biểu đồ trực quan hóa
+  - numpy
+  - pandas
+  - pillow
+  - matplotlib
+  - scikit-learn
+  - tqdm
+  - pyyaml
+  - jupyter
+  - ipykernel
+
+  - pip:
+    - segmentation-models-pytorch>=0.3
+    - albumentations>=1.3
+    - wandb
+    - -e .    # Cài đặt thư mục src/ như một package có thể chỉnh sửa (editable mode)
