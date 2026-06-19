@@ -13,8 +13,8 @@ __pycache__/
 .ipynb_checkpoints/
 
 # Thư mục chứa dữ liệu và kết quả huấn luyện (tránh đẩy file lớn lên GitHub)
-data/
-outputs/
+/data/
+/outputs/
 *.pth
 *.pt
 *.onnx
