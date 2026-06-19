@@ -13,4 +13,4 @@ training:
   deterministic: false               # Tắt chế độ deterministic để tăng tốc độ tính toán song song
 
 data:
-  num_workers: 4                     # Tăng số luồng nạp dữ liệu để tận dụng tối đa CPU của Kaggle
+  num_workers: 4                   # Đặt bằng 2 để tránh quá tải CPU và deadlock bộ nhớ chia sẻ trên Kaggle

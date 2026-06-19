@@ -24,7 +24,7 @@ model:
 # -----------------------------------------------------------------------------
 training:
   batch_size: 64                      # Kích thước batch huấn luyện
-  find_unused_parameters: false       # Chỉ dùng cho DDP: đặt True nếu mô hình có các nhánh phân tách không sử dụng
+  find_unused_parameters: true        # Chỉ dùng cho DDP: đặt True nếu mô hình có các nhánh phân tách không sử dụng (như classification head của backbone)
   max_epochs: 500                     # Số lượng epoch tối đa chạy huấn luyện
   optimizer: adamw                    # Bộ tối ưu hóa: "adamw" | "adam" | "sgd"
   lr: 2.0e-4                          # Tỷ lệ học (Learning rate) cơ bản
