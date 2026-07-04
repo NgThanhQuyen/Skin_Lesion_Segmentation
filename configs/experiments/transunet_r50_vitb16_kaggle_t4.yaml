@@ -10,7 +10,7 @@ model:
   transunet_variant: r50_vit_b16
   encoder_name: r50_vit_b16
   encoder_weights: imagenet
-  pretrained_path: /kaggle/input/transunet-pretrained-weights/R50+ViT-B_16.npz # Cần chỉ định đường dẫn file NPZ trên Kaggle
+  pretrained_path: null
   decoder_channels: [256, 128, 64, 16]
   skip_channels: [512, 256, 64, 16]
   n_skip: 3
@@ -30,7 +30,7 @@ training:
   weight_decay: 1.0e-4
   grad_clip: 1.0                     # Kích hoạt cắt giảm gradient để ổn định quá trình tối ưu hóa
   deterministic: false
-  find_unused_parameters: true
+  find_unused_parameters: false
   differential_lr:
     enabled: false
 

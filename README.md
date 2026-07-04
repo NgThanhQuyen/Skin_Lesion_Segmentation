@@ -159,11 +159,3 @@ python scripts/predict.py \
   --tta \
   --overlay
 ```
-
----
-
-## Các điểm nhấn kỹ thuật trong CV (Dành cho nhà tuyển dụng)
-
-- **Tích hợp FP16 AMP:** Triển khai cơ chế ép kiểu tự động và phóng đại gradient trong lớp `Trainer` lõi để tối ưu hóa việc tận dụng Tensor Cores trên GPU, giúp tăng tốc độ huấn luyện mô hình lên khoảng 1.8 lần.
-- **Thiết kế khối TTA tin cậy:** Xây dựng khối dự đoán TTA tùy chỉnh hỗ trợ xoay và lật ảnh độc lập, đảm bảo phục hồi kích thước không gian chuẩn xác và đồng bộ hóa xác suất đầu ra mượt mà.
-- **Tối ưu hàm mất mát kết hợp:** Sử dụng sự kết hợp cân bằng giữa Focal Loss (tập trung xử lý các pixel đường biên khó phân đoạn) và Soft Dice Loss (tập trung tối ưu hóa độ trùng khớp tổng thể) để đạt được kết quả phân tách sắc nét ở các vùng da tổn thương.
