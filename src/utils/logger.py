@@ -31,10 +31,13 @@ class Logger:
     def __init__(self, config: Any, output_dir: Path):
         self.output_dir = Path(output_dir)
         self.use_wandb = config.logging.use_wandb
+        self.use_dagshub = getattr(config.logging, "use_dagshub", False)
         self.history: list[dict] = []
         self._wandb_run = None
+        self._mlflow_run = None
 
         self._init_wandb(config)
+        self._init_dagshub(config)
 
     # ------------------------------------------------------------------
     # Thiết lập khởi tạo
@@ -68,6 +71,64 @@ class Logger:
             logger.warning(f"Khởi tạo W&B thất bại: {e}. Hệ thống chuyển về chế độ ghi nhật ký cục bộ.")
             self.use_wandb = False
 
+    def _init_dagshub(self, config: Any) -> None:
+        """Khởi tạo kết nối với hệ thống giám sát DagsHub MLflow."""
+        if not self.use_dagshub:
+            return
+
+        try:
+            import dagshub
+            import mlflow
+        except ImportError:
+            logger.warning(
+                "Thư viện dagshub hoặc mlflow chưa được cài đặt. "
+                "Hệ thống chuyển về chế độ ghi nhật ký cục bộ cho phần DagsHub."
+            )
+            self.use_dagshub = False
+            return
+
+        username = getattr(config.logging, "dagshub_username", None)
+        repo = getattr(config.logging, "dagshub_repo", None)
+
+        if not username or not repo:
+            logger.warning(
+                "Thiếu thông tin cấu hình dagshub_username hoặc dagshub_repo. "
+                "Bỏ qua ghi nhận nhật ký DagsHub."
+            )
+            self.use_dagshub = False
+            return
+
+        try:
+            # Khởi tạo tích hợp DagsHub với MLflow
+            dagshub.init(repo_owner=username, repo_name=repo, mlflow=True)
+            
+            # Đặt tên Experiment
+            mlflow.set_experiment(config.logging.project)
+            
+            # Bắt đầu run mới
+            experiment_name = config.logging.experiment_name or "default_experiment"
+            self._mlflow_run = mlflow.start_run(run_name=experiment_name)
+            
+            # Ghi các thông số cấu hình (params)
+            flat_config = self._flatten_dict(config.to_dict())
+            mlflow.log_params(flat_config)
+            
+            logger.info("Đã liên kết thành công với DagsHub MLflow!")
+        except Exception as e:
+            logger.warning(f"Khởi tạo DagsHub MLflow thất bại: {e}. Hệ thống chuyển về chế độ ghi nhật ký cục bộ cho phần DagsHub.")
+            self.use_dagshub = False
+
+    def _flatten_dict(self, d: dict, parent_key: str = "", sep: str = ".") -> dict:
+        """Làm phẳng từ điển lồng nhau để ghi nhận cấu hình lên MLflow."""
+        items = []
+        for k, v in d.items():
+            new_key = f"{parent_key}{sep}{k}" if parent_key else k
+            if isinstance(v, dict):
+                items.extend(self._flatten_dict(v, new_key, sep=sep).items())
+            else:
+                items.append((new_key, v))
+        return dict(items)
+
     # ------------------------------------------------------------------
     # Lưu nhật ký
     # ------------------------------------------------------------------
@@ -81,11 +142,23 @@ class Logger:
         if self.use_wandb and self._wandb_run:
             self._wandb_run.log(metrics, step=step)
 
+        if self.use_dagshub and self._mlflow_run:
+            import mlflow
+            # Loại bỏ trường 'step' khỏi metrics trước khi log vào MLflow (vì MLflow truyền step qua đối số)
+            mlflow_metrics = {k: v for k, v in metrics.items() if k != "step"}
+            mlflow.log_metrics(mlflow_metrics, step=step)
+
     def log_summary(self, summary: dict) -> None:
         """Ghi nhận chỉ số tóm tắt cuối cùng (kết quả test, chỉ số tốt nhất...)."""
         if self.use_wandb and self._wandb_run:
             for k, v in summary.items():
                 self._wandb_run.summary[k] = v
+
+        if self.use_dagshub and self._mlflow_run:
+            import mlflow
+            for k, v in summary.items():
+                if isinstance(v, (int, float)):
+                    mlflow.log_metric(f"best_{k}", v)
 
     def log_image(self, key: str, image_path: str | Path) -> None:
         """Gửi hình ảnh kết quả lên giao diện W&B."""
@@ -93,6 +166,15 @@ class Logger:
             import wandb
 
             self._wandb_run.log({key: wandb.Image(str(image_path))})
+
+        if self.use_dagshub and self._mlflow_run:
+            import mlflow
+            try:
+                from PIL import Image
+                img = Image.open(image_path)
+                mlflow.log_image(img, f"{key}.png")
+            except Exception:
+                mlflow.log_artifact(str(image_path), artifact_path="images")
 
     # ------------------------------------------------------------------
     # Lưu trữ cục bộ
@@ -175,7 +257,30 @@ class Logger:
     # ------------------------------------------------------------------
 
     def finish(self) -> None:
-        """Hoàn tất quá trình ghi nhật ký và đóng liên kết với W&B."""
+        """Hoàn tất quá trình ghi nhật ký và đóng liên kết với W&B/DagsHub."""
         self.save_history()
         if self.use_wandb and self._wandb_run:
             self._wandb_run.finish()
+
+        if self.use_dagshub and self._mlflow_run:
+            import mlflow
+            try:
+                # Tải các tệp tin kết quả quan trọng lên DagsHub dưới dạng artifact
+                artifacts = [
+                    "best_model.pth",
+                    "training_curves.png",
+                    "training_summary.json",
+                    "training_history.json",
+                    "training_history.csv",
+                    "metrics_summary.json",
+                    "metrics_summary.csv"
+                ]
+                for art_name in artifacts:
+                    art_path = self.output_dir / art_name
+                    if art_path.exists():
+                        mlflow.log_artifact(str(art_path))
+                        logger.info(f"Đã upload thành công artifact: {art_name} lên DagsHub.")
+            except Exception as e:
+                logger.warning(f"Tải artifacts lên DagsHub thất bại: {e}")
+            finally:
+                mlflow.end_run()

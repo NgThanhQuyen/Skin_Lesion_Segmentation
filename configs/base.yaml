@@ -93,6 +93,11 @@ logging:
   entity: null                        # Tài khoản W&B sử dụng (null = tài khoản mặc định)
   experiment_name: null               # Tên phiên thử nghiệm (null = tự động lấy tên file cấu hình tương ứng)
 
+  # Cấu hình DagsHub / MLflow
+  use_dagshub: false                  # Kích hoạt ghi nhận nhật ký qua DagsHub (MLflow)
+  dagshub_username: null              # Tên tài khoản DagsHub (ví dụ: nguyenthanhquyen145)
+  dagshub_repo: null                  # Tên repository DagsHub (ví dụ: Skin_Lesion_Segmentation)
+
 # -----------------------------------------------------------------------------
 # Thư mục đầu ra (Output Directory)
 # Chạy cục bộ:  output.dir = outputs
