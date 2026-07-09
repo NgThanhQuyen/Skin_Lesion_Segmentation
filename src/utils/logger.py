@@ -32,6 +32,7 @@ class Logger:
         self.output_dir = Path(output_dir)
         self.use_wandb = config.logging.use_wandb
         self.use_dagshub = getattr(config.logging, "use_dagshub", False)
+        self.upload_model = getattr(config.logging, "upload_model", False)
         self.history: list[dict] = []
         self._wandb_run = None
         self._mlflow_run = None
@@ -267,7 +268,6 @@ class Logger:
             try:
                 # Tải các tệp tin kết quả quan trọng lên DagsHub dưới dạng artifact
                 artifacts = [
-                    "best_model.pth",
                     "training_curves.png",
                     "training_summary.json",
                     "training_history.json",
@@ -275,6 +275,11 @@ class Logger:
                     "metrics_summary.json",
                     "metrics_summary.csv"
                 ]
+                if self.upload_model:
+                    artifacts.append("best_model.pth")
+                else:
+                    logger.info("Cấu hình upload_model=False. Bỏ qua tải tệp trọng số best_model.pth lên DagsHub.")
+
                 for art_name in artifacts:
                     art_path = self.output_dir / art_name
                     if art_path.exists():

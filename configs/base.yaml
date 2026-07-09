@@ -97,6 +97,7 @@ logging:
   use_dagshub: false                  # Kích hoạt ghi nhận nhật ký qua DagsHub (MLflow)
   dagshub_username: null              # Tên tài khoản DagsHub (ví dụ: nguyenthanhquyen145)
   dagshub_repo: null                  # Tên repository DagsHub (ví dụ: Skin_Lesion_Segmentation)
+  upload_model: false                 # Đặt True để upload file trọng số nặng (.pth) lên DagsHub, mặc định False để tiết kiệm dung lượng
 
 # -----------------------------------------------------------------------------
 # Thư mục đầu ra (Output Directory)
