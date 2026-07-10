@@ -1,0 +1,34 @@
+[
+    {
+        "Model":"ResNet34 + UNet",
+        "Folder":"\/kaggle\/working\/resnet34_unet_kaggle_t4",
+        "Best Epoch":37,
+        "Best Val Dice":0.9498651475,
+        "Best Val IoU":0.9109350465,
+        "Min Val Loss":0.0502336573
+    },
+    {
+        "Model":"TransUNet (R50+ViT-B\/16)",
+        "Folder":"\/kaggle\/working\/transunet_r50_vitb16_kaggle_t4",
+        "Best Epoch":23,
+        "Best Val Dice":0.9482488591,
+        "Best Val IoU":0.907547078,
+        "Min Val Loss":0.0521749229
+    },
+    {
+        "Model":"DeepLabV3 + MobileNetV3",
+        "Folder":"\/kaggle\/working\/mobilenetv3_deeplabv3_v1",
+        "Best Epoch":48,
+        "Best Val Dice":0.9482415818,
+        "Best Val IoU":0.9069005971,
+        "Min Val Loss":0.0526698365
+    },
+    {
+        "Model":"UNet Original",
+        "Folder":"\/kaggle\/working\/unet_original_v1",
+        "Best Epoch":78,
+        "Best Val Dice":0.9348588057,
+        "Best Val IoU":0.8880344474,
+        "Min Val Loss":0.068901878
+    }
+]
