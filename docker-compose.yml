@@ -1,0 +1,11 @@
+services:
+  web_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: skin_lesion_app
+    ports:
+      - "8888:8000"
+    env_file:
+      - web_app/.env
+    restart: always

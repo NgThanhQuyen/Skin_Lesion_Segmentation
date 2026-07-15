@@ -23,3 +23,6 @@ __pycache__/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Web App environment variables
+web_app/.env
