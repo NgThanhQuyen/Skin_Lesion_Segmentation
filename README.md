@@ -21,7 +21,7 @@ Sơ đồ dưới đây trực quan hóa luồng dữ liệu từ quá trình Hu
 ```mermaid
 graph TD
     %% MLOps & Training Phase
-    subgraph MLOps & Huấn luyện (Kaggle / Local GPU)
+    subgraph "MLOps & Huấn luyện (Kaggle / Local GPU)"
         A[Dataset ISIC 2018] --> B[Data Preprocessing & Split]
         B --> C[Model Factory UNet / TransUNet / DeepLabV3+]
         C --> D[DDP Training with AMP]
@@ -30,7 +30,7 @@ graph TD
     end
 
     %% Web App / Deployment Phase
-    subgraph Đóng gói & Triển khai (Docker Container)
+    subgraph "Đóng gói & Triển khai (Docker Container)"
         F -->|Tải tự động khi start| G[FastAPI Backend Server]
         H[React Client UI] <-->|Gửi ảnh & Threshold| G
         G -->|Chạy suy luận TTA CPU| I[PyTorch Inference Engine]
@@ -130,6 +130,13 @@ Thống kê hiệu năng mô hình trên tập dữ liệu **ISIC 2018 Task 1** 
 | **2** | **TransUNet (R50+ViT-B/16)** | 23 | 0.9482 (94.82%) | 0.9075 (90.75%) | 0.0522 | **Đã Upload** (Mô hình Lai) |
 | **3** | **DeepLabV3 + MobileNetV3** | 48 | 0.9482 (94.82%) | 0.9069 (90.69%) | 0.0527 | Bỏ qua (Tiết kiệm bộ nhớ) |
 | 4 | **UNet Original** (Scratch) | 78 | 0.9349 (93.49%) | 0.8880 (88.80%) | 0.0689 | Bỏ qua (Tiết kiệm bộ nhớ) |
+
+#### Biểu đồ đánh giá huấn luyện và so sánh mô hình
+Dưới đây là các đồ thị biểu diễn kết quả huấn luyện mô hình và so sánh trực quan hiệu năng giữa các kiến trúc:
+
+| Đồ thị đường cong huấn luyện (Learning Curves) | Biểu đồ so sánh hiệu năng các mô hình (Model Comparison) |
+| :---: | :---: |
+| ![Đồ thị đường cong huấn luyện](outputs/learning_curves.png) | ![Biểu đồ so sánh hiệu năng](outputs/model_comparison_bar.png) |
 
 ---
 
